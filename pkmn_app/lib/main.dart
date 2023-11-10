@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'Namer App',
+        title: 'PKMN App',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 242, 29, 29)),
@@ -62,12 +62,15 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (selectedIndex) {
     case 0:
       page = GeneratorPage();
-      pageTitle = "Generator";  // Could move to page classes
+      pageTitle = "Main/Home/Location";  // Could move to page classes
       break;
     case 1:
-    case 2:
       page = FavoritesPage();
-      pageTitle = "Favorites";
+      pageTitle = "Map";
+      break;
+    case 2:
+      page = PokedexPage();
+      pageTitle = "Pokedex";
       break;
     default:
       throw UnimplementedError('no widget for $selectedIndex');
@@ -107,7 +110,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
               backgroundColor: Color.fromARGB(220, 242, 29, 29),
+              fixedColor: Colors.white,
               currentIndex: selectedIndex,
+              iconSize: 40,
+              selectedFontSize: 20,
+              unselectedFontSize: 15,
               onTap: (value) {
                 setState(() {
                   selectedIndex = value;
@@ -121,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class GeneratorPage extends StatelessWidget {
+class GeneratorPage extends StatelessWidget { // This will be the main page
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -165,7 +172,7 @@ class GeneratorPage extends StatelessWidget {
   }
 }
 
-class FavoritesPage extends StatelessWidget {
+class FavoritesPage extends StatelessWidget { // This will be the map page - https://mapstyle.withgoogle.com/
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -191,6 +198,27 @@ class FavoritesPage extends StatelessWidget {
   );   
   }
 }
+
+class PokedexPage extends StatelessWidget {
+  
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    
+    return GridView.count(
+      crossAxisCount: 3,
+      children:List.generate(151, (index) {
+        return Center (
+        child: Text(
+          'Item $index',
+          style: Theme.of(context).textTheme.headlineSmall,
+      ),
+      );
+    }),
+  );
+  }
+}
+
 
 class BigCard extends StatelessWidget {
   const BigCard({
