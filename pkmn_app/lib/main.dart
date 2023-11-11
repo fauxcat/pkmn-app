@@ -181,6 +181,7 @@ class MainPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Main/Home/Location"),
+        titleTextStyle: TextStyle(fontSize: 30),
         centerTitle: true,
         backgroundColor: primaryColor,
       ),
@@ -221,6 +222,7 @@ class MapPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Map"),
+        titleTextStyle: TextStyle(fontSize: 30),
         centerTitle: true,
         backgroundColor: primaryColor,
       ),
@@ -282,6 +284,7 @@ class _PokedexPageState extends State<PokedexPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Pokedex"),
+        titleTextStyle: TextStyle(fontSize: 30),
         centerTitle: true,
         backgroundColor: primaryColor,
       ),
@@ -294,23 +297,34 @@ class _PokedexPageState extends State<PokedexPage> {
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: MaterialButton(
-                minWidth: double.infinity,
-                height: double.infinity,
-                color: Color.fromARGB(255, 10, 15, 19),
-                textColor: Colors.white,
-                onPressed: () {
-                  // Handle button click (open pop-up with pkmn info)
-                  appState.selectPokedexEntry(index);
-                  _showBottomSheet(
-                      context, index, appState.selectedPokedexEntryIndex);
-                },
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Text(
-                    '${pokemon?.name ?? ""}',
-                  ),
-                ),
-              ),
+                  minWidth: double.infinity,
+                  height: double.infinity,
+                  color: Color.fromARGB(255, 10, 15, 19),
+                  textColor: Colors.white,
+                  onPressed: () {
+                    // Handle button click (open pop-up with pkmn info)
+                    appState.selectPokedexEntry(index);
+                    _showBottomSheet(
+                        context, index, appState.selectedPokedexEntryIndex);
+                  },
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    double imageSize = constraints.maxWidth * 0.9;
+                    return Column(
+                      children: [
+                        Image.asset(
+                          'assets/sprites/${index + 1}.gif',
+                          height: imageSize,
+                          width: imageSize,
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Text(
+                            '${pokemon?.name ?? ""}',
+                          ),
+                        ),
+                      ],
+                    );
+                  })),
             ),
           );
         }),
@@ -331,56 +345,58 @@ class _PokedexPageState extends State<PokedexPage> {
             width: MediaQuery.of(context).size.width,
             child: Padding(
               padding: const EdgeInsets.all(30.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${pokemon?.name ?? ""}',
-                    style: TextStyle(color: Colors.white, fontSize: 30),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Type 1: ${pokemon?.type1 ?? ""}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Type 2: ${pokemon?.type2 ?? ""}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'HP: ${pokemon?.hp ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Attack: ${pokemon?.attack ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Defense: ${pokemon?.defense ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Sp. Attack: ${pokemon?.spAttack ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Sp. Defense: ${pokemon?.spDefense ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Speed: ${pokemon?.speed ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    'Found = ${pokemon?.found ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Other info...',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${pokemon?.name ?? ""}',
+                      style: TextStyle(color: Colors.white, fontSize: 30),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Type 1: ${pokemon?.type1 ?? ""}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'Type 2: ${pokemon?.type2 ?? ""}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'HP: ${pokemon?.hp ?? 0}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'Attack: ${pokemon?.attack ?? 0}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'Defense: ${pokemon?.defense ?? 0}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'Sp. Attack: ${pokemon?.spAttack ?? 0}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'Sp. Defense: ${pokemon?.spDefense ?? 0}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'Speed: ${pokemon?.speed ?? 0}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'Found = ${pokemon?.found ?? 0}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Other info...',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
