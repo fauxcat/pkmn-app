@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pkmn_app/pokemon.dart';
@@ -260,12 +261,27 @@ class _MapPageState extends State<MapPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     shape: CircleBorder(),
+                    backgroundColor: Colors.white,
                   ),
                   child: Icon(Icons.pin_drop),
                 ),
-                Text(
-                  'Button 1',
-                  style: TextStyle(fontSize: 16, color: Colors.red),
+                SizedBox(height: 3.0),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white70,
+                    border: Border.all(color: primaryColor),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Text(
+                    'Button 1',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.red,
+                      fontFamily: 'Helvetica',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -287,9 +303,23 @@ class _MapPageState extends State<MapPage> {
                   ),
                   child: Icon(Icons.pin_drop),
                 ),
-                Text(
-                  'Button 2',
-                  style: TextStyle(fontSize: 16, color: Colors.red),
+                SizedBox(height: 3.0),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white70,
+                    border: Border.all(color: primaryColor),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Text(
+                    'Button 2',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.red,
+                      fontFamily: 'Helvetica',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
