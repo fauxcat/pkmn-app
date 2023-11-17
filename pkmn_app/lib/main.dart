@@ -212,7 +212,12 @@ class MainPage extends StatelessWidget {
   }
 }
 
-class MapPage extends StatelessWidget {
+class MapPage extends StatefulWidget {
+  @override
+  State<MapPage> createState() => _MapPageState();
+}
+
+class _MapPageState extends State<MapPage> {
   // This will be the map page - https://mapstyle.withgoogle.com/
   @override
   Widget build(BuildContext context) {
@@ -230,37 +235,63 @@ class MapPage extends StatelessWidget {
       body: Stack(
         children: [
           // Add map image as a background - Ask Nad about this, not sure what to do with resizing changing button place and image quality
-          Center(
+          Positioned(
+            top: 0,
+            left: 0,
             child: Image.asset(
               'assets/campusMap2.jpg',
-              width: 1024,
-              height: 1024,
-              fit: BoxFit.fill,
+              width: 512,
+              height: 512,
+              fit: BoxFit.contain,
             ),
           ),
           //Overlay buttons on the map
           Positioned(
-            top: 0,
-            left: 0,
-            child: ElevatedButton(
-              onPressed: () {
-                // Handle button click
-                // Change values/location in appState here
-                print("Button 1");
-              },
-              child: Text('Button 1'),
+            top: 200,
+            left: 100,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Handle button click
+                    // Change values/location in appState here
+                    print("Button 1");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: CircleBorder(),
+                  ),
+                  child: Icon(Icons.pin_drop),
+                ),
+                Text(
+                  'Button 1',
+                  style: TextStyle(fontSize: 16, color: Colors.red),
+                ),
+              ],
             ),
           ),
           Positioned(
             top: 20,
-            right: 20,
-            child: ElevatedButton(
-              onPressed: () {
-                // Handle button click
-                // Change values/location in appState here
-                print("Button 2");
-              },
-              child: Text('Button 2'),
+            left: 200,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Handle button click
+                    // Change values/location in appState here
+                    print("Button 2");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: CircleBorder(),
+                  ),
+                  child: Icon(Icons.pin_drop),
+                ),
+                Text(
+                  'Button 2',
+                  style: TextStyle(fontSize: 16, color: Colors.red),
+                ),
+              ],
             ),
           ),
         ],
