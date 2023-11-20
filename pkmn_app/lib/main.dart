@@ -230,18 +230,22 @@ class _MainPageState extends State<MainPage> {
   EncounterType _currentEncounter = EncounterType.FindEncounter;
 
   void _showCaughtMessage(bool isCaught) {
-    setState(() {
-      _showCaughtText = true;
-      _caughtMessage =
-          isCaught ? 'Nice! You caught it!' : 'Oh no! The Pokémon ran away!';
-    });
-
-    // After 5 seconds, hide the text
-    Timer(Duration(seconds: 3), () {
+    if (mounted) {
       setState(() {
-        _showCaughtText = false;
+        _showCaughtText = true;
+        _caughtMessage =
+            isCaught ? 'Nice! You caught it!' : 'Oh no! The Pokémon ran away!';
       });
-    });
+
+      // After 5 seconds, hide the text
+      Timer(Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _showCaughtText = false;
+          });
+        }
+      });
+    }
   }
 
   Widget _buildThrowPokeballButton(BuildContext context) {
@@ -421,6 +425,50 @@ class _MapPageState extends State<MapPage> {
   void updateLocation(int newLocation) =>
       context.read<MyAppState>().updateLocation(newLocation);
 
+  Widget buildMapButton({
+    required VoidCallback onPressed,
+    required String buttonText,
+    required double top,
+    required double left,
+    required Color primaryColor,
+  }) {
+    return Positioned(
+      top: top,
+      left: left,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              shape: CircleBorder(),
+              backgroundColor: Colors.white,
+            ),
+            child: Icon(Icons.pin_drop),
+          ),
+          SizedBox(height: 3.0),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
+            decoration: BoxDecoration(
+              color: Colors.white70,
+              border: Border.all(color: primaryColor),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Text(
+              buttonText,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.red,
+                fontFamily: 'Helvetica',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -447,86 +495,75 @@ class _MapPageState extends State<MapPage> {
             ),
 
             //Overlay buttons on the map
-            Positioned(
-              top: 200,
-              left: 100,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle button click
-                      // Change values/location in appState here
-                      updateLocation(1);
-                      print("Button 1");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: CircleBorder(),
-                      backgroundColor: Colors.white,
-                    ),
-                    child: Icon(Icons.pin_drop),
-                  ),
-                  SizedBox(height: 3.0),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white70,
-                      border: Border.all(color: primaryColor),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Text(
-                      'Button 1',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.red,
-                        fontFamily: 'Helvetica',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            buildMapButton(
+              onPressed: () {
+                updateLocation(1);
+                print("Area 1");
+              },
+              buttonText: 'Area 1',
+              top: 160,
+              left: 250,
+              primaryColor: primaryColor,
             ),
-            Positioned(
+            buildMapButton(
+              onPressed: () {
+                updateLocation(2);
+                print("Area 2");
+              },
+              buttonText: 'Area 2',
               top: 20,
-              left: 200,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle button click
-                      // Change values/location in appState here
-                      updateLocation(2);
-                      print("Button 2");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: CircleBorder(),
-                    ),
-                    child: Icon(Icons.pin_drop),
-                  ),
-                  SizedBox(height: 3.0),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white70,
-                      border: Border.all(color: primaryColor),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Text(
-                      'Button 2',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.red,
-                        fontFamily: 'Helvetica',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              left: 560,
+              primaryColor: primaryColor,
+            ),
+            buildMapButton(
+              onPressed: () {
+                updateLocation(3);
+                print("Area 3");
+              },
+              buttonText: 'Area 3',
+              top: 300,
+              left: 630,
+              primaryColor: primaryColor,
+            ),
+            buildMapButton(
+              onPressed: () {
+                updateLocation(4);
+                print("Area 4");
+              },
+              buttonText: 'Area 4',
+              top: 450,
+              left: 300,
+              primaryColor: primaryColor,
+            ),
+            buildMapButton(
+              onPressed: () {
+                updateLocation(5);
+                print("Area 5");
+              },
+              buttonText: 'Area 5',
+              top: 200,
+              left: 580,
+              primaryColor: primaryColor,
+            ),
+            buildMapButton(
+              onPressed: () {
+                updateLocation(6);
+                print("Area 6");
+              },
+              buttonText: 'Area 6',
+              top: 300,
+              left: 400,
+              primaryColor: primaryColor,
+            ),
+            buildMapButton(
+              onPressed: () {
+                updateLocation(7);
+                print("Area 7");
+              },
+              buttonText: 'Area 7',
+              top: 450,
+              left: 500,
+              primaryColor: primaryColor,
             ),
           ],
         ),
