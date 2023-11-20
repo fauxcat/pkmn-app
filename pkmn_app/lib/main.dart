@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pkmn_app/pokemon.dart';
 import 'package:provider/provider.dart';
+import 'dart:math';
 
 late Box<Pokemon> box;
 
@@ -79,13 +80,16 @@ class MyApp extends StatelessWidget {
 class MyAppState extends ChangeNotifier {
   var barColor = Color.fromARGB(255, 242, 29, 29);
   int selectedPokedexEntryIndex = 0;
+  int location = 1;
+  int selectedWildIndex = -1;
+  Pokemon? selectedPokemon;
 
   void updateFound(int index, int found) async {
-    final box = await Hive.openBox<Pokemon>('pokedex');
     final pokemon = box.getAt(index);
     if (pokemon != null) {
       pokemon.found = true;
       await box.putAt(index, pokemon);
+      print("Pokemon ${pokemon.name} at index $index found: ${pokemon.found}");
       notifyListeners();
     }
   }
@@ -93,6 +97,40 @@ class MyAppState extends ChangeNotifier {
   void selectPokedexEntry(int index) {
     selectedPokedexEntryIndex = index;
     notifyListeners();
+  }
+
+  List<Pokemon?> getPokemonForLocation(int location) {
+    List<Pokemon?> pokemonList = box.values.toList();
+
+    // Define the number of locations and calculate Pokemon per location
+    int numberOfLocations = 7; // Change this based on your requirements
+    int pokemonPerLocation = (pokemonList.length / numberOfLocations).ceil();
+
+    // Determine the range of Pokemon indices accessible for the current location
+    int startIndex = (location - 1) * pokemonPerLocation;
+    int endIndex = startIndex + pokemonPerLocation;
+
+    // Filter Pokemon list to show only the subset for the current location
+    return pokemonList.sublist(startIndex,
+        endIndex > pokemonList.length ? pokemonList.length : endIndex);
+  }
+
+  void updateLocation(int newLocation) {
+    location = newLocation;
+    selectedPokemon = null;
+    notifyListeners();
+  }
+
+  void selectRandomPokemon(int location) {
+    List<Pokemon?> availablePokemon = getPokemonForLocation(location);
+
+    if (availablePokemon.isNotEmpty) {
+      // Generate a random index within the available Pokemon range
+      int randomIndex = Random().nextInt(availablePokemon.length);
+      selectedPokemon = availablePokemon[randomIndex];
+      selectedWildIndex = box.keys.toList().indexOf(selectedPokemon?.number);
+      notifyListeners();
+    }
   }
 }
 
@@ -178,19 +216,47 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var primaryColor = appState.barColor;
+    var location = appState.location;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Main/Home/Location"),
+        title: Text("Catch Them All!"),
         titleTextStyle: TextStyle(fontSize: 30),
         centerTitle: true,
         backgroundColor: primaryColor,
       ),
       backgroundColor: Colors.black87,
-      body: Center(
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (appState.selectedPokemon != null)
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/sprites/${appState.selectedPokemon!.number}.gif',
+                    height: 400, // Adjust height as needed
+                    width: 400, // Adjust width as needed
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
+            )
+          else
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "There's nothing here yet...",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
+            ),
+          Padding(
             padding: const EdgeInsets.fromLTRB(40.0, 0.0, 40.0, 20.0),
             child: Container(
               width: double.infinity,
@@ -199,15 +265,23 @@ class MainPage extends StatelessWidget {
                   backgroundColor: Colors.blueGrey.shade900,
                 ),
                 onPressed: () {
-                  // Do next action - depends on current situation
-                  print(box.length);
+                  final double catchChance = 1;
+                  if (Random().nextDouble() > 1 - catchChance) {
+                    // If caught successfully
+                    appState.updateFound(appState.selectedWildIndex, 1);
+                  } else {
+                    print("Not caught");
+                  }
+                  appState.selectRandomPokemon(location);
                 },
-                child: Text('Action Button',
-                    style: TextStyle(color: Colors.red.shade500)),
+                child: Text(
+                  'Throw a Pokeball!',
+                  style: TextStyle(color: Colors.red.shade500),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -220,6 +294,10 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   // This will be the map page - https://mapstyle.withgoogle.com/
+
+  void updateLocation(int newLocation) =>
+      context.read<MyAppState>().updateLocation(newLocation);
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -233,98 +311,102 @@ class _MapPageState extends State<MapPage> {
         backgroundColor: primaryColor,
       ),
       backgroundColor: Colors.black87,
-      body: Stack(
-        children: [
-          // Add map image as a background - Ask Nad about this, not sure what to do with resizing changing button place and image quality
-          Positioned(
-            top: 0,
-            left: 0,
-            child: Image.asset(
+      body: Center(
+        child: Stack(
+          children: [
+            // Add map image as a background - Ask Nad about this, not sure what to do with resizing changing button place and image quality
+
+            Image.asset(
               'assets/campusMap2.jpg',
-              width: 512,
-              height: 512,
+              width: 1024,
+              height: 1024,
               fit: BoxFit.contain,
             ),
-          ),
-          //Overlay buttons on the map
-          Positioned(
-            top: 200,
-            left: 100,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle button click
-                    // Change values/location in appState here
-                    print("Button 1");
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: CircleBorder(),
-                    backgroundColor: Colors.white,
+
+            //Overlay buttons on the map
+            Positioned(
+              top: 200,
+              left: 100,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Handle button click
+                      // Change values/location in appState here
+                      updateLocation(1);
+                      print("Button 1");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: CircleBorder(),
+                      backgroundColor: Colors.white,
+                    ),
+                    child: Icon(Icons.pin_drop),
                   ),
-                  child: Icon(Icons.pin_drop),
-                ),
-                SizedBox(height: 3.0),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white70,
-                    border: Border.all(color: primaryColor),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Text(
-                    'Button 1',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.red,
-                      fontFamily: 'Helvetica',
-                      fontWeight: FontWeight.bold,
+                  SizedBox(height: 3.0),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white70,
+                      border: Border.all(color: primaryColor),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Text(
+                      'Button 1',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.red,
+                        fontFamily: 'Helvetica',
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Positioned(
-            top: 20,
-            left: 200,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle button click
-                    // Change values/location in appState here
-                    print("Button 2");
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: CircleBorder(),
+            Positioned(
+              top: 20,
+              left: 200,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Handle button click
+                      // Change values/location in appState here
+                      updateLocation(2);
+                      print("Button 2");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: CircleBorder(),
+                    ),
+                    child: Icon(Icons.pin_drop),
                   ),
-                  child: Icon(Icons.pin_drop),
-                ),
-                SizedBox(height: 3.0),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white70,
-                    border: Border.all(color: primaryColor),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Text(
-                    'Button 2',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.red,
-                      fontFamily: 'Helvetica',
-                      fontWeight: FontWeight.bold,
+                  SizedBox(height: 3.0),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 1.0, horizontal: 5.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white70,
+                      border: Border.all(color: primaryColor),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Text(
+                      'Button 2',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.red,
+                        fontFamily: 'Helvetica',
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
