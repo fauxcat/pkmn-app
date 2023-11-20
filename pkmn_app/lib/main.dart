@@ -83,7 +83,7 @@ class MyAppState extends ChangeNotifier {
   int selectedPokedexEntryIndex = 0;
   int location = 1;
   int selectedWildIndex = -1;
-  int pokeballCount = 10;
+  int pokeballCount = 100;
   Pokemon? selectedPokemon;
 
   void updateFound(int index, int found) async {
@@ -106,6 +106,7 @@ class MyAppState extends ChangeNotifier {
 
     // Define the number of locations and calculate Pokemon per location
     int numberOfLocations = 7; // Change this based on your requirements
+    pokemonList.shuffle(); // Randomise the order (just in list, not database)
     int pokemonPerLocation = (pokemonList.length / numberOfLocations).ceil();
 
     // Determine the range of Pokemon indices accessible for the current location
@@ -212,6 +213,12 @@ class _MyNavBarState extends State<MyNavBar> {
   }
 }
 
+enum EncounterType {
+  FindEncounter,
+  CatchPokemon,
+  SpinPokestop,
+}
+
 class MainPage extends StatefulWidget {
   @override
   State<MainPage> createState() => _MainPageState();
@@ -220,6 +227,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   bool _showCaughtText = false;
   String _caughtMessage = '';
+  EncounterType _currentEncounter = EncounterType.FindEncounter;
 
   void _showCaughtMessage(bool isCaught) {
     setState(() {
@@ -234,6 +242,71 @@ class _MainPageState extends State<MainPage> {
         _showCaughtText = false;
       });
     });
+  }
+
+  Widget _buildThrowPokeballButton(BuildContext context) {
+    var appState = Provider.of<MyAppState>(context, listen: false);
+
+    String buttonText = '';
+    if (_currentEncounter == EncounterType.CatchPokemon) {
+      buttonText = 'Catch a Pokémon!';
+    } else if (_currentEncounter == EncounterType.FindEncounter) {
+      buttonText = 'Find an Encounter!';
+    } else {
+      // Add other encounter types here (e.g., spin pokestop)
+      // buttonText = 'Spin Pokestop!';
+    }
+
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blueGrey.shade900,
+      ),
+      onPressed: () {
+        if (_currentEncounter == EncounterType.CatchPokemon &&
+            appState.pokeballCount > 0) {
+          const double catchChance = 0.5;
+          if (Random().nextDouble() > 1 - catchChance) {
+            // If caught successfully
+            appState.updateFound(appState.selectedWildIndex, 1);
+            _showCaughtMessage(true); // Show "Caught!" message
+          } else {
+            print("Not caught");
+            _showCaughtMessage(false);
+          }
+          appState.selectRandomPokemon(appState.location);
+          appState.pokeballCount--;
+        } else if (_currentEncounter == EncounterType.CatchPokemon &&
+            appState.pokeballCount <= 0) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('No More Pokeballs!'),
+                content: Text(
+                    'You have no more pokeballs left.\nVisit a pokestop to get more!'),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          appState.selectRandomPokemon(appState.location);
+          setState(() {
+            _currentEncounter = EncounterType.CatchPokemon;
+          });
+        }
+      },
+      child: Text(
+        buttonText,
+        style: TextStyle(color: Colors.red.shade500),
+      ),
+    );
   }
 
   // This will be the main page
@@ -328,50 +401,7 @@ class _MainPageState extends State<MainPage> {
             padding: const EdgeInsets.fromLTRB(40.0, 0.0, 40.0, 20.0),
             child: Container(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey.shade900,
-                ),
-                onPressed: () {
-                  print(appState.pokeballCount);
-                  if (appState.pokeballCount > 0) {
-                    final double catchChance = 0.5;
-                    if (Random().nextDouble() > 1 - catchChance) {
-                      // If caught successfully
-                      appState.updateFound(appState.selectedWildIndex, 1);
-                      _showCaughtMessage(true); // Show "Caught!" message
-                    } else {
-                      print("Not caught");
-                      _showCaughtMessage(false);
-                    }
-                    appState.selectRandomPokemon(location);
-                    appState.pokeballCount--;
-                  } else {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('No More Pokeballs!'),
-                          content: Text(
-                              'You have no more pokeballs left.\nVisit a pokestop to get more!'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                },
-                child: Text(
-                  'Throw a Pokeball!',
-                  style: TextStyle(color: Colors.red.shade500),
-                ),
-              ),
+              child: _buildThrowPokeballButton(context),
             ),
           )
         ],
@@ -517,9 +547,29 @@ class _PokedexPageState extends State<PokedexPage> {
     var appState = context.watch<MyAppState>();
     var primaryColor = appState.barColor;
 
+    // Length of box when only looking at found pokemon (a.k.a found count)
+    int foundPokemonCount = box.values.where((pokemon) => pokemon.found).length;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pokedex"),
+        title: Stack(
+          children: [
+            Center(
+              child: Text(
+                "Pokedex",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 16,
+              child: Text(
+                'Found: $foundPokemonCount/151',
+                style: TextStyle(fontSize: 14),
+              ),
+            ),
+          ],
+        ),
         titleTextStyle: TextStyle(fontSize: 30),
         centerTitle: true,
         backgroundColor: primaryColor,
@@ -555,7 +605,7 @@ class _PokedexPageState extends State<PokedexPage> {
                         Align(
                           alignment: Alignment.bottomCenter,
                           child: Text(
-                            '${pokemon?.name ?? ""}',
+                            pokemon?.name ?? "",
                           ),
                         ),
                       ],
@@ -586,7 +636,7 @@ class _PokedexPageState extends State<PokedexPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${pokemon?.name ?? ""}',
+                      pokemon?.name ?? "",
                       style: TextStyle(color: Colors.white, fontSize: 30),
                     ),
                     SizedBox(height: 5),
