@@ -29,5 +29,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/campusMap2.jpg
+    - assets/pokeball.png
     - assets/pokemon_list.csv
     - assets/sprites/
+

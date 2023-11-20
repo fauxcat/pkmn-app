@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pkmn_app/pokemon.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
+import 'dart:async';
 
 late Box<Pokemon> box;
 
@@ -82,6 +83,7 @@ class MyAppState extends ChangeNotifier {
   int selectedPokedexEntryIndex = 0;
   int location = 1;
   int selectedWildIndex = -1;
+  int pokeballCount = 10;
   Pokemon? selectedPokemon;
 
   void updateFound(int index, int found) async {
@@ -210,7 +212,30 @@ class _MyNavBarState extends State<MyNavBar> {
   }
 }
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  bool _showCaughtText = false;
+  String _caughtMessage = '';
+
+  void _showCaughtMessage(bool isCaught) {
+    setState(() {
+      _showCaughtText = true;
+      _caughtMessage =
+          isCaught ? 'Nice! You caught it!' : 'Oh no! The Pokémon ran away!';
+    });
+
+    // After 5 seconds, hide the text
+    Timer(Duration(seconds: 3), () {
+      setState(() {
+        _showCaughtText = false;
+      });
+    });
+  }
+
   // This will be the main page
   @override
   Widget build(BuildContext context) {
@@ -220,7 +245,32 @@ class MainPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Catch Them All!"),
+        title: Stack(
+          children: [
+            Center(
+              child: Text(
+                "Catch Them All!",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Positioned(
+              right: 32,
+              child: Column(
+                children: [
+                  Image.asset(
+                    'assets/pokeball.png',
+                    width: 25,
+                    height: 25,
+                  ),
+                  Text(
+                    'Pokeballs: ${appState.pokeballCount}',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         titleTextStyle: TextStyle(fontSize: 30),
         centerTitle: true,
         backgroundColor: primaryColor,
@@ -229,6 +279,24 @@ class MainPage extends StatelessWidget {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(height: 5),
+          AnimatedOpacity(
+              opacity: _showCaughtText ? 1.0 : 0.0, // AnimatedOpacity widget
+              duration: Duration(milliseconds: 500),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: Text(
+                  _caughtMessage,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              )),
           if (appState.selectedPokemon != null)
             Expanded(
               child: Column(
@@ -265,14 +333,39 @@ class MainPage extends StatelessWidget {
                   backgroundColor: Colors.blueGrey.shade900,
                 ),
                 onPressed: () {
-                  final double catchChance = 1;
-                  if (Random().nextDouble() > 1 - catchChance) {
-                    // If caught successfully
-                    appState.updateFound(appState.selectedWildIndex, 1);
+                  print(appState.pokeballCount);
+                  if (appState.pokeballCount > 0) {
+                    final double catchChance = 0.5;
+                    if (Random().nextDouble() > 1 - catchChance) {
+                      // If caught successfully
+                      appState.updateFound(appState.selectedWildIndex, 1);
+                      _showCaughtMessage(true); // Show "Caught!" message
+                    } else {
+                      print("Not caught");
+                      _showCaughtMessage(false);
+                    }
+                    appState.selectRandomPokemon(location);
+                    appState.pokeballCount--;
                   } else {
-                    print("Not caught");
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('No More Pokeballs!'),
+                          content: Text(
+                              'You have no more pokeballs left.\nVisit a pokestop to get more!'),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('OK'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   }
-                  appState.selectRandomPokemon(location);
                 },
                 child: Text(
                   'Throw a Pokeball!',
@@ -280,7 +373,7 @@ class MainPage extends StatelessWidget {
                 ),
               ),
             ),
-          ),
+          )
         ],
       ),
     );
