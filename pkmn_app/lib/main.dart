@@ -53,7 +53,7 @@ Future<void> loadPokemonData() async {
       box.put(key, pokemon);
     }
   } catch (e) {
-    print("Error loading Pokemon data: $e");
+    print("Error loading Pokémon data: $e");
     // Could implement visual error message for user here. Restart program
   }
 }
@@ -91,7 +91,7 @@ class MyAppState extends ChangeNotifier {
     if (pokemon != null) {
       pokemon.found = true;
       await box.putAt(index, pokemon);
-      print("Pokemon ${pokemon.name} at index $index found: ${pokemon.found}");
+      print("Pokémon ${pokemon.name} at index $index found: ${pokemon.found}");
       notifyListeners();
     }
   }
@@ -103,19 +103,18 @@ class MyAppState extends ChangeNotifier {
 
   List<Pokemon?> getPokemonForLocation(int location) {
     List<Pokemon?> pokemonList = box.values.toList();
-
-    // Define the number of locations and calculate Pokemon per location
     int numberOfLocations = 7; // Change this based on your requirements
-    pokemonList.shuffle(); // Randomise the order (just in list, not database)
-    int pokemonPerLocation = (pokemonList.length / numberOfLocations).ceil();
 
-    // Determine the range of Pokemon indices accessible for the current location
-    int startIndex = (location - 1) * pokemonPerLocation;
-    int endIndex = startIndex + pokemonPerLocation;
+    List<Pokemon?> pokemonForLocation = [];
+    int currentIndex = location - 1;
 
-    // Filter Pokemon list to show only the subset for the current location
-    return pokemonList.sublist(startIndex,
-        endIndex > pokemonList.length ? pokemonList.length : endIndex);
+    // Iterate through the list to select the corresponding Pokemon for the location
+    while (currentIndex < pokemonList.length) {
+      pokemonForLocation.add(pokemonList[currentIndex]);
+      currentIndex += numberOfLocations;
+    }
+
+    return pokemonForLocation;
   }
 
   void updateLocation(int newLocation) {
@@ -318,7 +317,6 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var primaryColor = appState.barColor;
-    var location = appState.location;
 
     return Scaffold(
       appBar: AppBar(
@@ -516,71 +514,71 @@ class _MapPageState extends State<MapPage> {
             buildMapButton(
               onPressed: () {
                 updateLocation(1);
-                print("Area 1");
+                print("Richmond");
               },
-              buttonText: 'Area 1',
-              top: 160,
-              left: 250,
+              buttonText: 'Richmond Building',
+              top: 190,
+              left: 130,
               primaryColor: primaryColor,
             ),
             buildMapButton(
               onPressed: () {
                 updateLocation(2);
-                print("Area 2");
+                print("Catherine House");
               },
-              buttonText: 'Area 2',
-              top: 20,
+              buttonText: 'Catherine House',
+              top: 60,
               left: 560,
               primaryColor: primaryColor,
             ),
             buildMapButton(
               onPressed: () {
                 updateLocation(3);
-                print("Area 3");
+                print("Rosalind Franklin");
               },
-              buttonText: 'Area 3',
-              top: 300,
-              left: 630,
+              buttonText: 'Rosalind Franklin',
+              top: 360,
+              left: 450,
               primaryColor: primaryColor,
             ),
             buildMapButton(
               onPressed: () {
                 updateLocation(4);
-                print("Area 4");
+                print("Library");
               },
-              buttonText: 'Area 4',
-              top: 450,
-              left: 300,
+              buttonText: 'Library',
+              top: 630,
+              left: 270,
               primaryColor: primaryColor,
             ),
             buildMapButton(
               onPressed: () {
                 updateLocation(5);
-                print("Area 5");
+                print("Guildhall");
               },
-              buttonText: 'Area 5',
-              top: 200,
+              buttonText: 'Guildhall',
+              top: 240,
               left: 580,
               primaryColor: primaryColor,
             ),
             buildMapButton(
               onPressed: () {
                 updateLocation(6);
-                print("Area 6");
+                print("Eldon Building");
               },
-              buttonText: 'Area 6',
-              top: 300,
-              left: 400,
+              buttonText: 'Eldon Building',
+              top: 490,
+              left: 670,
               primaryColor: primaryColor,
             ),
             buildMapButton(
               onPressed: () {
                 updateLocation(7);
-                print("Area 7");
+                print("Bateson Hall");
               },
-              buttonText: 'Area 7',
-              top: 450,
-              left: 500,
+              buttonText: 'Bateson Hall',
+              top: 350,
+              left: 690,
               primaryColor: primaryColor,
             ),
           ],
@@ -621,6 +619,15 @@ class _PokedexPageState extends State<PokedexPage> {
               child: Text(
                 'Found: $foundPokemonCount/151',
                 style: TextStyle(fontSize: 14),
+              ),
+            ),
+            Positioned(
+              left: 8,
+              child: IconButton(
+                icon: Icon(Icons.help),
+                onPressed: () {
+                  _showHelpDialog(context);
+                },
               ),
             ),
           ],
@@ -673,74 +680,100 @@ class _PokedexPageState extends State<PokedexPage> {
     );
   }
 
-  void _showBottomSheet(
-      BuildContext context, int index, int selectedPokedexEntryIndex) {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Color.fromARGB(255, 16, 21, 25),
-        builder: (BuildContext context) {
-          final pokemon = box.getAt(selectedPokedexEntryIndex);
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.5,
-            width: MediaQuery.of(context).size.width,
-            child: Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      pokemon?.name ?? "",
-                      style: TextStyle(color: Colors.white, fontSize: 30),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      'Type 1: ${pokemon?.type1 ?? ""}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Type 2: ${pokemon?.type2 ?? ""}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'HP: ${pokemon?.hp ?? 0}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Attack: ${pokemon?.attack ?? 0}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Defense: ${pokemon?.defense ?? 0}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Sp. Attack: ${pokemon?.spAttack ?? 0}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Sp. Defense: ${pokemon?.spDefense ?? 0}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Speed: ${pokemon?.speed ?? 0}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      'Found = ${pokemon?.found ?? 0}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      'Other info...',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
+  void _showHelpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pokedex Help'),
+          content: Text(
+            "This is the Pokedex page where you can view different Pokémon. "
+            "You can tap on a Pokémon to view more details about it. "
+            "The 'Found' count shows the number of Pokémon you have found "
+            "out of the total 151 available Pokémon. "
+            "Can't find someone? Different Pokémon appear in different locations! ",
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+void _showBottomSheet(
+    BuildContext context, int index, int selectedPokedexEntryIndex) {
+  showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Color.fromARGB(255, 16, 21, 25),
+      builder: (BuildContext context) {
+        final pokemon = box.getAt(selectedPokedexEntryIndex);
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.5,
+          width: MediaQuery.of(context).size.width,
+          child: Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pokemon?.name ?? "",
+                    style: TextStyle(color: Colors.white, fontSize: 30),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Type 1: ${pokemon?.type1 ?? ""}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'Type 2: ${pokemon?.type2 ?? ""}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'HP: ${pokemon?.hp ?? 0}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'Attack: ${pokemon?.attack ?? 0}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'Defense: ${pokemon?.defense ?? 0}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'Sp. Attack: ${pokemon?.spAttack ?? 0}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'Sp. Defense: ${pokemon?.spDefense ?? 0}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'Speed: ${pokemon?.speed ?? 0}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    'Found = ${pokemon?.found ?? 0}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Other info...',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
             ),
-          );
-        });
-  }
+          ),
+        );
+      });
 }
