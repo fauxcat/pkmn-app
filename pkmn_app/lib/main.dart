@@ -83,7 +83,7 @@ class MyAppState extends ChangeNotifier {
   int selectedPokedexEntryIndex = 0;
   int location = 1;
   int selectedWildIndex = -1;
-  int pokeballCount = 100;
+  int pokeballCount = 10000;
   Pokemon? selectedPokemon;
 
   void updateFound(int index, int found) async {
@@ -268,7 +268,7 @@ class _MainPageState extends State<MainPage> {
       onPressed: () {
         if (_currentEncounter == EncounterType.CatchPokemon &&
             appState.pokeballCount > 0) {
-          const double catchChance = 0.5;
+          const double catchChance = 0.375;
           if (Random().nextDouble() > 1 - catchChance) {
             // If caught successfully
             appState.updateFound(appState.selectedWildIndex, 1);
@@ -331,7 +331,7 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
             Positioned(
-              right: 32,
+              right: 8,
               child: Column(
                 children: [
                   Image.asset(
@@ -381,8 +381,9 @@ class _MainPageState extends State<MainPage> {
                 children: [
                   Image.asset(
                     'assets/sprites/${appState.selectedPokemon!.number}.gif',
-                    height: 400, // Adjust height as needed
-                    width: 400, // Adjust width as needed
+                    height: 64, // Adjust height as needed
+                    width: 64, // Adjust width as needed
+                    fit: BoxFit.contain,
                   ),
                   SizedBox(height: 20),
                 ],
@@ -476,7 +477,24 @@ class _MapPageState extends State<MapPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Map"),
+        title: Stack(
+          children: [
+            Center(
+              child: Text(
+                "Map",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 16,
+              child: Text(
+                'Current Location: ${appState.location}',
+                style: TextStyle(fontSize: 14),
+              ),
+            ),
+          ],
+        ),
         titleTextStyle: TextStyle(fontSize: 30),
         centerTitle: true,
         backgroundColor: primaryColor,
