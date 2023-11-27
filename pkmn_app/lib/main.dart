@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pkmn_app/pokemon.dart';
@@ -87,6 +86,7 @@ class MyAppState extends ChangeNotifier {
   Pokemon? selectedPokemon;
 
   void updateFound(int index, int found) async {
+    // To change Pokemon found value in Pokedex bottom sheet
     final pokemon = box.getAt(index);
     if (pokemon != null) {
       pokemon.found = true;
@@ -97,11 +97,13 @@ class MyAppState extends ChangeNotifier {
   }
 
   void selectPokedexEntry(int index) {
+    // For Pokedex Bottom Sheet
     selectedPokedexEntryIndex = index;
     notifyListeners();
   }
 
   List<Pokemon?> getPokemonForLocation(int location) {
+    // List of all pokemon available for chosen location
     List<Pokemon?> pokemonList = box.values.toList();
     int numberOfLocations = 7; // Change this based on your requirements
 
@@ -124,6 +126,7 @@ class MyAppState extends ChangeNotifier {
   }
 
   void selectRandomPokemon(int location) {
+    // For individual random encounters
     List<Pokemon?> availablePokemon = getPokemonForLocation(location);
 
     if (availablePokemon.isNotEmpty) {
@@ -142,6 +145,7 @@ class MyNavBar extends StatefulWidget {
 }
 
 class _MyNavBarState extends State<MyNavBar> {
+  // Bottom Navigation Bar containing page buttons
   var selectedPageIndex = 0;
   var pageTitle = "";
 
@@ -154,13 +158,10 @@ class _MyNavBarState extends State<MyNavBar> {
     switch (selectedPageIndex) {
       case 0:
         page = MainPage();
-        break;
       case 1:
         page = MapPage();
-        break;
       case 2:
         page = PokedexPage();
-        break;
       default:
         throw UnimplementedError('no widget for $selectedPageIndex');
     }
@@ -175,7 +176,6 @@ class _MyNavBarState extends State<MyNavBar> {
           ),
           SafeArea(
             child: BottomNavigationBar(
-              //Replace with navigationBar and adjust as needed
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.catching_pokemon_sharp),
@@ -193,7 +193,7 @@ class _MyNavBarState extends State<MyNavBar> {
               unselectedItemColor: Theme.of(context)
                   .colorScheme
                   .secondary, // Customize the unselected label text color
-              backgroundColor: primaryColor, // Custom
+              backgroundColor: primaryColor,
               fixedColor: Colors.white,
               currentIndex: selectedPageIndex,
               iconSize: 30,
@@ -213,9 +213,10 @@ class _MyNavBarState extends State<MyNavBar> {
 }
 
 enum EncounterType {
-  FindEncounter,
-  CatchPokemon,
-  SpinPokestop,
+  // Enumerator for each encounter type - fixed set of data
+  findEncounter,
+  catchPokemon,
+  spinPokestop,
 }
 
 class MainPage extends StatefulWidget {
@@ -226,9 +227,10 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   bool _showCaughtText = false;
   String _caughtMessage = '';
-  EncounterType _currentEncounter = EncounterType.FindEncounter;
+  EncounterType _currentEncounter = EncounterType.findEncounter;
 
   void _showCaughtMessage(bool isCaught) {
+    // Temporary message once a Pokeball is used (catch a pokemon button pressed)
     if (mounted) {
       setState(() {
         _showCaughtText = true;
@@ -236,7 +238,7 @@ class _MainPageState extends State<MainPage> {
             isCaught ? 'Nice! You caught it!' : 'Oh no! The Pokémon ran away!';
       });
 
-      // After 5 seconds, hide the text
+      // After 3 seconds, hide the text
       Timer(Duration(seconds: 3), () {
         if (mounted) {
           setState(() {
@@ -247,17 +249,17 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-  Widget _buildThrowPokeballButton(BuildContext context) {
+  Widget _buildMainPageButton(BuildContext context) {
+    // Internal method to change main page button text and action
     var appState = Provider.of<MyAppState>(context, listen: false);
 
     String buttonText = '';
-    if (_currentEncounter == EncounterType.CatchPokemon) {
+    if (_currentEncounter == EncounterType.catchPokemon) {
       buttonText = 'Catch a Pokémon!';
-    } else if (_currentEncounter == EncounterType.FindEncounter) {
+    } else if (_currentEncounter == EncounterType.findEncounter) {
       buttonText = 'Find an Encounter!';
     } else {
-      // Add other encounter types here (e.g., spin pokestop)
-      // buttonText = 'Spin Pokestop!';
+      // Add pokestop encounter type here
     }
 
     return ElevatedButton(
@@ -265,21 +267,22 @@ class _MainPageState extends State<MainPage> {
         backgroundColor: Colors.blueGrey.shade900,
       ),
       onPressed: () {
-        if (_currentEncounter == EncounterType.CatchPokemon &&
+        if (_currentEncounter == EncounterType.catchPokemon &&
             appState.pokeballCount > 0) {
-          const double catchChance = 0.375;
+          const double catchChance = 0.375; // 0(Impossible) - 1(Always)
           if (Random().nextDouble() > 1 - catchChance) {
             // If caught successfully
             appState.updateFound(appState.selectedWildIndex, 1);
             _showCaughtMessage(true); // Show "Caught!" message
           } else {
             print("Not caught");
-            _showCaughtMessage(false);
+            _showCaughtMessage(false); // Show "Got Away" message
           }
           appState.selectRandomPokemon(appState.location);
           appState.pokeballCount--;
-        } else if (_currentEncounter == EncounterType.CatchPokemon &&
+        } else if (_currentEncounter == EncounterType.catchPokemon &&
             appState.pokeballCount <= 0) {
+          // No Pokeballs left
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -301,7 +304,7 @@ class _MainPageState extends State<MainPage> {
         } else {
           appState.selectRandomPokemon(appState.location);
           setState(() {
-            _currentEncounter = EncounterType.CatchPokemon;
+            _currentEncounter = EncounterType.catchPokemon;
           });
         }
       },
@@ -312,7 +315,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  // This will be the main page
+  // Main Page
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -356,7 +359,7 @@ class _MainPageState extends State<MainPage> {
         children: [
           SizedBox(height: 5),
           AnimatedOpacity(
-              opacity: _showCaughtText ? 1.0 : 0.0, // AnimatedOpacity widget
+              opacity: _showCaughtText ? 1.0 : 0.0,
               duration: Duration(milliseconds: 500),
               child: Container(
                 decoration: BoxDecoration(
@@ -372,7 +375,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
               )),
-          if (appState.selectedPokemon != null)
+          if (appState.selectedPokemon != null) // One statement so no {}
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -387,7 +390,7 @@ class _MainPageState extends State<MainPage> {
                 ],
               ),
             )
-          else
+          else // One statement so no {}
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -404,7 +407,7 @@ class _MainPageState extends State<MainPage> {
             padding: const EdgeInsets.fromLTRB(40.0, 0.0, 40.0, 20.0),
             child: Container(
               width: double.infinity,
-              child: _buildThrowPokeballButton(context),
+              child: _buildMainPageButton(context),
             ),
           )
         ],
@@ -421,10 +424,22 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   // This will be the map page - https://mapstyle.withgoogle.com/
 
+  Map<int, String> locationNames = {
+    // Map to assign location to names for app bar
+    1: 'Richmond Building',
+    2: 'Catherine House',
+    3: 'Rosalind Franklin',
+    4: 'Library',
+    5: 'Guildhall',
+    6: 'Eldon Building',
+    7: 'Bateson Hall',
+  };
+
   void updateLocation(int newLocation) =>
       context.read<MyAppState>().updateLocation(newLocation);
 
   Widget buildMapButton({
+    // Creates the icon and text combos for the map
     required VoidCallback onPressed,
     required String buttonText,
     required double top,
@@ -487,7 +502,7 @@ class _MapPageState extends State<MapPage> {
               top: 10,
               right: 16,
               child: Text(
-                'Current Location: ${appState.location}',
+                'Current Location: ${locationNames[appState.location]}',
                 style: TextStyle(fontSize: 14),
               ),
             ),
@@ -510,7 +525,7 @@ class _MapPageState extends State<MapPage> {
               fit: BoxFit.contain,
             ),
 
-            //Overlay buttons on the map
+            //Overlay buttons on the map with method above
             buildMapButton(
               onPressed: () {
                 updateLocation(1);
@@ -594,7 +609,7 @@ class PokedexPage extends StatefulWidget {
 }
 
 class _PokedexPageState extends State<PokedexPage> {
-  // This will be the pokedex page - Gridview with buttons for each pokemon...
+  // This will be the pokedex page - Gridview with buttons for each pokemon
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -650,7 +665,7 @@ class _PokedexPageState extends State<PokedexPage> {
                   color: Color.fromARGB(255, 10, 15, 19),
                   textColor: Colors.white,
                   onPressed: () {
-                    // Handle button click (open pop-up with pkmn info)
+                    // Handle button click (open pop-up with Pokemon info)
                     appState.selectPokedexEntry(index);
                     _showBottomSheet(
                         context, index, appState.selectedPokedexEntryIndex);
@@ -681,6 +696,7 @@ class _PokedexPageState extends State<PokedexPage> {
   }
 
   void _showHelpDialog(BuildContext context) {
+    // Help Button in App Bar
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -708,7 +724,10 @@ class _PokedexPageState extends State<PokedexPage> {
 }
 
 void _showBottomSheet(
-    BuildContext context, int index, int selectedPokedexEntryIndex) {
+    // Internal method for clicking a Pokemon in Pokedex page
+    BuildContext context,
+    int index,
+    int selectedPokedexEntryIndex) {
   showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -716,7 +735,7 @@ void _showBottomSheet(
       builder: (BuildContext context) {
         final pokemon = box.getAt(selectedPokedexEntryIndex);
         return Container(
-          height: MediaQuery.of(context).size.height * 0.5,
+          height: MediaQuery.of(context).size.height * 0.4,
           width: MediaQuery.of(context).size.width,
           child: Padding(
             padding: const EdgeInsets.all(30.0),
@@ -725,7 +744,7 @@ void _showBottomSheet(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    pokemon?.name ?? "",
+                    pokemon?.name ?? "", // If name is null, default to blank
                     style: TextStyle(color: Colors.white, fontSize: 30),
                   ),
                   SizedBox(height: 5),
@@ -762,7 +781,7 @@ void _showBottomSheet(
                     style: TextStyle(color: Colors.white),
                   ),
                   Text(
-                    'Found = ${pokemon?.found ?? 0}',
+                    'Found: ${pokemon?.found ?? 0}',
                     style: TextStyle(color: Colors.white),
                   ),
                   SizedBox(height: 20),
