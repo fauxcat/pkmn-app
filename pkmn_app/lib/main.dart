@@ -71,6 +71,7 @@ class MyApp extends StatelessWidget {
           colorScheme:
               ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 242, 29, 29)),
         ),
+        debugShowCheckedModeBanner: false,
         home: MyNavBar(),
       ),
     );
@@ -782,11 +783,6 @@ void _showBottomSheet(
                   ),
                   Text(
                     'Found: ${pokemon?.found ?? 0}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Other info...',
                     style: TextStyle(color: Colors.white),
                   ),
                 ],
