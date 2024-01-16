@@ -423,7 +423,7 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  // This will be the map page - https://mapstyle.withgoogle.com/
+  // This will be the map page - https://www.port.ac.uk/sites/default/files/2023-05/campus-map.pdf
 
   Map<int, String> locationNames = {
     // Map to assign location to names for app bar
@@ -517,7 +517,7 @@ class _MapPageState extends State<MapPage> {
       body: Center(
         child: Stack(
           children: [
-            // Add map image as a background - Ask Nad about this, not sure what to do with resizing changing button place and image quality
+            // Add map image as a background
 
             Image.asset(
               'assets/campusMap2.jpg',
